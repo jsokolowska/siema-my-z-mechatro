@@ -238,3 +238,7 @@ search = RandomizedSearchCV(estimator=clf, param_distributions=params, n_iter=10
 search.fit(X_train, y_train)
 print(search.best_estimator_.score(X_test, y_test))
 print(search.best_params_)
+
+# best result:
+# 0.9672279013830427
+# {'tol': 0.0001, 'solver': 'liblinear', 'penalty': 'l2', 'multi_class': 'ovr', 'max_iter': 200, 'C': 0.9}
