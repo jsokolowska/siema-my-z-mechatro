@@ -1,4 +1,3 @@
 # siema-my-z-mechatro
 
-Żeby zobaczyć wykresy z biblioteki plotly trzeba odpalić prezentację przy użyciu nbviewer:
-https://nbviewer.jupyter.org/github/jsokolowska/siema-my-z-mechatro/blob/main/SiemaMyZMechatro.ipynb
+Jest problem z wyświetleniem wykresów z biblioteki plotly w notatkikach jupyter na githubie, więc pełną wersję prezentacji zaprezentujemy na spotkaniu.
