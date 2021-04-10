@@ -1,0 +1,368 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "final_model.ipynb",
+      "provenance": [],
+      "collapsed_sections": []
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "u_ey0YRVbWyD"
+      },
+      "source": [
+        "import pandas as pd\n",
+        "import numpy as np"
+      ],
+      "execution_count": 63,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "yvW1eSZQbicB"
+      },
+      "source": [
+        "#test_data = pd.read_csv(\"test_data.csv\")"
+      ],
+      "execution_count": 64,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "BWseFMDWs_Kf"
+      },
+      "source": [
+        "Setup\n",
+        "===\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "w-zTUBM8sruc"
+      },
+      "source": [
+        "class Model:\n",
+        "  def __init__(self, model, scaler):\n",
+        "    self.model = model\n",
+        "    self.scaler = scaler\n",
+        "    self.dropped_features = ['angle(X,gravityMean)','angle(tBodyAccJerkMean),gravityMean)',\n",
+        " 'angle(tBodyAccMean,gravity)',\n",
+        " 'angle(tBodyGyroJerkMean,gravityMean)',\n",
+        " 'angle(tBodyGyroMean,gravityMean)',\n",
+        " 'energy-mean()',\n",
+        " 'fBodyAcc-energy()-X',\n",
+        " 'fBodyAcc-entropy()-X',\n",
+        " 'fBodyAcc-entropy()-Y',\n",
+        " 'fBodyAcc-entropy()-Z',\n",
+        " 'fBodyAcc-iqr()-X',\n",
+        " 'fBodyAcc-iqr()-Y',\n",
+        " 'fBodyAcc-iqr()-Z',\n",
+        " 'fBodyAcc-kurtosis()-X',\n",
+        " 'fBodyAcc-kurtosis()-Y',\n",
+        " 'fBodyAcc-kurtosis()-Z',\n",
+        " 'fBodyAcc-mad()-X',\n",
+        " 'fBodyAcc-mad()-Z',\n",
+        " 'fBodyAcc-main()-X',\n",
+        " 'fBodyAcc-main()-Z',\n",
+        " 'fBodyAcc-max()-X',\n",
+        " 'fBodyAcc-maxInds-X',\n",
+        " 'fBodyAcc-maxInds-Y',\n",
+        " 'fBodyAcc-maxInds-Z',\n",
+        " 'fBodyAcc-meanFreq()-X',\n",
+        " 'fBodyAcc-min()-X',\n",
+        " 'fBodyAcc-skewness()-X',\n",
+        " 'fBodyAcc-skewness()-Y',\n",
+        " 'fBodyAcc-skewness()-Z',\n",
+        " 'fBodyAcc-sma()',\n",
+        " 'fBodyAcc-std()-X',\n",
+        " 'fBodyAcc-std()-Y',\n",
+        " 'fBodyAcc-std()-Z',\n",
+        " 'fBodyAccJerk-energy()-Y',\n",
+        " 'fBodyAccJerk-entropy()-X',\n",
+        " 'fBodyAccJerk-mad()-Z',\n",
+        " 'fBodyAccJerk-max()-Z',\n",
+        " 'fBodyAccJerk-maxInds-Y',\n",
+        " 'fBodyAccJerk-maxInds-Z',\n",
+        " 'fBodyAccJerk-min()-X',\n",
+        " 'fBodyAccJerk-min()-Y',\n",
+        " 'fBodyAccJerk-sma()',\n",
+        " 'fBodyAccJerk-std()-X',\n",
+        " 'fBodyAccJerk-std()-Z',\n",
+        " 'fBodyAccMag-energy()',\n",
+        " 'fBodyAccMag-entropy()',\n",
+        " 'fBodyAccMag-iqr()',\n",
+        " 'fBodyAccMag-kurtosis()',\n",
+        " 'fBodyAccMag-mad()',\n",
+        " 'fBodyAccMag-maxInds',\n",
+        " 'fBodyAccMag-meanFreq()',\n",
+        " 'fBodyAccMag-min()',\n",
+        " 'fBodyAccMag-skewness()',\n",
+        " 'fBodyAccMag-sma()',\n",
+        " 'fBodyAccMag-std()',\n",
+        " 'fBodyBodyAccJerkMag-kurtosis()',\n",
+        " 'fBodyBodyAccJerkMag-maxInds',\n",
+        " 'fBodyBodyAccJerkMag-meanFreq()',\n",
+        " 'fBodyBodyAccJerkMag-skewness()',\n",
+        " 'fBodyBodyGyroJerkMag-kurtosis()',\n",
+        " 'fBodyBodyGyroJerkMag-maxInds',\n",
+        " 'fBodyBodyGyroJerkMag-meanFreq()',\n",
+        " 'fBodyBodyGyroJerkMag-skewness()',\n",
+        " 'fBodyBodyGyroMag-kurtosis()',\n",
+        " 'fBodyBodyGyroMag-maxInds',\n",
+        " 'fBodyBodyGyroMag-meanFreq()',\n",
+        " 'fBodyBodyGyroMag-skewness()',\n",
+        " 'fBodyGyro-energy()-X',\n",
+        " 'fBodyGyro-energy()-Y',\n",
+        " 'fBodyGyro-energy()-Z',\n",
+        " 'fBodyGyro-entropy()-X',\n",
+        " 'fBodyGyro-entropy()-Y',\n",
+        " 'fBodyGyro-iqr()-X',\n",
+        " 'fBodyGyro-iqr()-Z',\n",
+        " 'fBodyGyro-kurtosis()-X',\n",
+        " 'fBodyGyro-kurtosis()-Y',\n",
+        " 'fBodyGyro-kurtosis()-Z',\n",
+        " 'fBodyGyro-mad()-X',\n",
+        " 'fBodyGyro-mad()-Y',\n",
+        " 'fBodyGyro-max()-X',\n",
+        " 'fBodyGyro-max()-Y',\n",
+        " 'fBodyGyro-max()-Z',\n",
+        " 'fBodyGyro-maxInds-X',\n",
+        " 'fBodyGyro-maxInds-Z',\n",
+        " 'fBodyGyro-meanFreq()-Y',\n",
+        " 'fBodyGyro-meanFreq()-Z',\n",
+        " 'fBodyGyro-min()-X',\n",
+        " 'fBodyGyro-skewness()-X',\n",
+        " 'fBodyGyro-skewness()-Y',\n",
+        " 'fBodyGyro-skewness()-Z',\n",
+        " 'fBodyGyro-sma()',\n",
+        " 'fBodyGyro-std()-X',\n",
+        " 'fBodyGyro-std()-Y',\n",
+        " 'fBodyGyro-std()-Z',\n",
+        " 'shadow-gravity-angle()',\n",
+        " 'subject',\n",
+        " 'tBodyAcc-arCoeff()-X,2',\n",
+        " 'tBodyAcc-arCoeff()-X,3',\n",
+        " 'tBodyAcc-arCoeff()-X,4',\n",
+        " 'tBodyAcc-arCoeff()-Y,2',\n",
+        " 'tBodyAcc-arCoeff()-Y,3',\n",
+        " 'tBodyAcc-arCoeff()-Y,4',\n",
+        " 'tBodyAcc-arCoeff()-Z,3',\n",
+        " 'tBodyAcc-arCoeff()-Z,4',\n",
+        " 'tBodyAcc-correlation()-X,Y',\n",
+        " 'tBodyAcc-correlation()-X,Z',\n",
+        " 'tBodyAcc-correlation()-Y,Z',\n",
+        " 'tBodyAcc-mean()-X',\n",
+        " 'tBodyAcc-mean()-Y',\n",
+        " 'tBodyAcc-mean()-Z',\n",
+        " 'tBodyAccJerk-arCoeff()-X,2',\n",
+        " 'tBodyAccJerk-arCoeff()-X,3',\n",
+        " 'tBodyAccJerk-arCoeff()-X,4',\n",
+        " 'tBodyAccJerk-arCoeff()-Y,2',\n",
+        " 'tBodyAccJerk-arCoeff()-Y,3',\n",
+        " 'tBodyAccJerk-arCoeff()-Y,4',\n",
+        " 'tBodyAccJerk-arCoeff()-Z,2',\n",
+        " 'tBodyAccJerk-arCoeff()-Z,3',\n",
+        " 'tBodyAccJerk-arCoeff()-Z,4',\n",
+        " 'tBodyAccJerk-correlation()-X,Y',\n",
+        " 'tBodyAccJerk-correlation()-X,Z',\n",
+        " 'tBodyAccJerk-correlation()-Y,Z',\n",
+        " 'tBodyAccJerk-mean()-X',\n",
+        " 'tBodyAccJerk-mean()-Y',\n",
+        " 'tBodyAccJerk-mean()-Z',\n",
+        " 'tBodyAccJerkMag-arCoeff()3',\n",
+        " 'tBodyAccJerkMag-arCoeff()4',\n",
+        " 'tBodyAccMag-arCoeff()3',\n",
+        " 'tBodyAccMag-arCoeff()4',\n",
+        " 'tBodyGyro-arCoeff()-X,2',\n",
+        " 'tBodyGyro-arCoeff()-X,3',\n",
+        " 'tBodyGyro-arCoeff()-Y,1',\n",
+        " 'tBodyGyro-arCoeff()-Y,3',\n",
+        " 'tBodyGyro-arCoeff()-Y,4',\n",
+        " 'tBodyGyro-arCoeff()-Z,3',\n",
+        " 'tBodyGyro-arCoeff()-Z,4',\n",
+        " 'tBodyGyro-correlation()-X,Y',\n",
+        " 'tBodyGyro-correlation()-X,Z',\n",
+        " 'tBodyGyro-correlation()-Y,Z',\n",
+        " 'tBodyGyro-low()-X',\n",
+        " 'tBodyGyro-low()-Y',\n",
+        " 'tBodyGyro-low()-Z',\n",
+        " 'tBodyGyro-mean()-X',\n",
+        " 'tBodyGyro-mean()-Y',\n",
+        " 'tBodyGyro-mean()-Z',\n",
+        " 'tBodyGyroJerk-arCoeff()-X,2',\n",
+        " 'tBodyGyroJerk-arCoeff()-X,3',\n",
+        " 'tBodyGyroJerk-arCoeff()-X,4',\n",
+        " 'tBodyGyroJerk-arCoeff()-Y,2',\n",
+        " 'tBodyGyroJerk-arCoeff()-Y,3',\n",
+        " 'tBodyGyroJerk-arCoeff()-Y,4',\n",
+        " 'tBodyGyroJerk-arCoeff()-Z,2',\n",
+        " 'tBodyGyroJerk-arCoeff()-Z,3',\n",
+        " 'tBodyGyroJerk-arCoeff()-Z,4',\n",
+        " 'tBodyGyroJerk-correlation()-X,Y',\n",
+        " 'tBodyGyroJerk-correlation()-X,Z',\n",
+        " 'tBodyGyroJerk-correlation()-Y,Z',\n",
+        " 'tBodyGyroJerk-mean()-X',\n",
+        " 'tBodyGyroJerk-mean()-Y',\n",
+        " 'tBodyGyroJerk-mean()-Z',\n",
+        " 'tBodyGyroJerkMag-arCoeff()1',\n",
+        " 'tBodyGyroJerkMag-arCoeff()2',\n",
+        " 'tBodyGyroJerkMag-arCoeff()3',\n",
+        " 'tBodyGyroJerkMag-arCoeff()4',\n",
+        " 'tBodyGyroMag-arCoeff()1',\n",
+        " 'tBodyGyroMag-arCoeff()2',\n",
+        " 'tBodyGyroMag-arCoeff()3',\n",
+        " 'tBodyGyroMag-arCoeff()4',\n",
+        " 'tBodyGyroMag-entropy()',\n",
+        " 'tGravityAcc-arCoeff()-X,1',\n",
+        " 'tGravityAcc-arCoeff()-X,2',\n",
+        " 'tGravityAcc-arCoeff()-X,3',\n",
+        " 'tGravityAcc-arCoeff()-X,4',\n",
+        " 'tGravityAcc-arCoeff()-Y,1',\n",
+        " 'tGravityAcc-arCoeff()-Y,2',\n",
+        " 'tGravityAcc-arCoeff()-Y,3',\n",
+        " 'tGravityAcc-arCoeff()-Y,4',\n",
+        " 'tGravityAcc-arCoeff()-Z,1',\n",
+        " 'tGravityAcc-arCoeff()-Z,2',\n",
+        " 'tGravityAcc-arCoeff()-Z,3',\n",
+        " 'tGravityAcc-arCoeff()-Z,4',\n",
+        " 'tGravityAcc-correlation()-X,Y',\n",
+        " 'tGravityAcc-correlation()-X,Z',\n",
+        " 'tGravityAcc-correlation()-Y,Z',\n",
+        " 'tGravityAcc-energy()-X',\n",
+        " 'tGravityAcc-energy()-Z',\n",
+        " 'tGravityAcc-entropy()-X',\n",
+        " 'tGravityAcc-entropy()-Y',\n",
+        " 'tGravityAcc-entropy()-Z',\n",
+        " 'tGravityAcc-iqr()-X',\n",
+        " 'tGravityAcc-mad()-X',\n",
+        " 'tGravityAcc-max()-X',\n",
+        " 'tGravityAcc-mean()-X',\n",
+        " 'tGravityAcc-min()-X',\n",
+        " 'tGravityAcc-sma()',\n",
+        " 'tGravityAcc-std()-X',\n",
+        " 'tGravityAccMag-arCoeff()3',\n",
+        " 'tGravityAccMag-arCoeff()4',\n",
+        " 'tGravityAccMag-mad()',\n",
+        " 'tGravityAccMag-sma()',\n",
+        " 'void()']\n",
+        "  def preprocess (self, x_test):\n",
+        "    x_red = x_test.fillna(x_test.mean())\n",
+        "    scaled = self.scaler.transform(x_red)\n",
+        "    x_red = pd.DataFrame(data = scaled, columns= x_red.columns)\n",
+        "    x_red = x_red.drop(self.dropped_features, axis=1)\n",
+        "    return x_red\n",
+        "  def predict(self, x_test):\n",
+        "    return self.model.predict(x_test)"
+      ],
+      "execution_count": 65,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "yqHFuB7DtDHM"
+      },
+      "source": [
+        "Predictions\n",
+        "====\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "m17iMIQitCvT"
+      },
+      "source": [
+        "data_path = \"/content/drive/MyDrive/Data/hackathon/final_train.csv\"\n",
+        "test_data = pd.read_csv(data_path)"
+      ],
+      "execution_count": 66,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "SeGaZPtTbjpW"
+      },
+      "source": [
+        "if \"Unnamed: 0\" in test_data.columns:\n",
+        "  test_data = test_data.drop(\"Unnamed: 0\", axis=1)\n",
+        "\n",
+        "with open('model(1).pkl', 'rb') as f:\n",
+        "    model = pickle.load(f)\n",
+        "\n",
+        "X_test = test_data.drop(\"Activity\", axis=1)\n",
+        "X_test = model.preprocess(X_test)\n",
+        "predicted = model.predict(X_test)"
+      ],
+      "execution_count": 67,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "i54tWEU_tkVM",
+        "outputId": "cd5d9e7d-a07c-457b-bf03-43aef6431eb2",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "source": [
+        "from google.colab import drive\n",
+        "drive.mount('/content/drive')"
+      ],
+      "execution_count": 68,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Drive already mounted at /content/drive; to attempt to forcibly remount, call drive.mount(\"/content/drive\", force_remount=True).\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "TdwdpmnAbkzL",
+        "outputId": "5185d2cd-8626-4721-dbb7-6e582edb1c20",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "source": [
+        "np.mean(predicted == test_data.Activity)"
+      ],
+      "execution_count": 69,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "0.9812375969691502"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 69
+        }
+      ]
+    }
+  ]
+}
